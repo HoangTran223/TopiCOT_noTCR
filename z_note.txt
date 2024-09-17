@@ -37,3 +37,5 @@ Dataset download link:
 preprocess code from scholar:
 python preprocess.py datasets\20NG\train.jsonlist datasets\20ng\processed\ --vocab-size 5000 --label group --test datasets\20ng\test.jsonlist --stopword snowball
 python preprocess.py datasets\Yahoo_Answers\train.jsonlist datasets\Yahoo_Answers\processed\ --vocab-size 5000 --label label --test datasets\Yahoo_Answers\test.jsonlist --stopword snowball
+
+#export KMP_DUPLICATE_LIB_OK=TRUE

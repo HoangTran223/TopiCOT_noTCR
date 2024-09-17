@@ -183,6 +183,8 @@ class OTClusterTM(nn.Module):
         rst_dict = {
             'loss': loss,
             'loss_TM': loss_TM,
+            'loss_recon': recon_loss,
+            'loss_KL': loss_KL,
             'loss_ECR': loss_ECR,
             'loss_DCR': loss_DCR,
             'loss_TCR': loss_TCR,

@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader, Dataset
 import numpy as np
 import scipy.sparse
 import scipy.io
+from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 from . import file_utils
 import os
@@ -101,7 +102,7 @@ class BasicDatasetHandler:
                     self.test_texts, device)
 
             self.contextual_embed_size = self.train_contextual_embed.shape[1]
-
+        print("1.0.1")
         if as_tensor:
             # if not contextual_embed:  # to be fixed with an additional argument
             #     self.train_data = self.train_bow
@@ -114,23 +115,24 @@ class BasicDatasetHandler:
 
             self.train_data = torch.from_numpy(self.train_data).to(device)
             self.test_data = torch.from_numpy(self.test_data).to(device)
-
+            print("1.0.2")
             if contextual_embed:
 
                 self.train_contextual_embed = torch.from_numpy(
                     self.train_contextual_embed).to(device)
                 self.test_contextual_embed = torch.from_numpy(
                     self.test_contextual_embed).to(device)
-
+                print("1.0.3")
                 train_dataset = DatasetHandler(
                     self.train_data, self.train_contextual_embed)
                 test_dataset = DatasetHandler(
                     self.test_data, self.test_contextual_embed)
-
+                print("1.0.4")
                 self.train_dataloader = DataLoader(
                     train_dataset, batch_size=batch_size, shuffle=True)
                 self.test_dataloader = DataLoader(
                     test_dataset, batch_size=batch_size, shuffle=False)
+                print("Done 1.")
 
             else:
                 train_dataset = DatasetHandler(self.train_data)

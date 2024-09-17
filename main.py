@@ -41,6 +41,8 @@ if __name__ == "__main__":
     else:
         read_labels = False
 
+    print("1.0")
+
     # load a preprocessed dataset
     if args.model in ['YTM', 'ZTM', 'CombinedTM', 'OTClusterTM']:
         dataset = topmost.data.BasicDatasetHandler(
@@ -50,7 +52,7 @@ if __name__ == "__main__":
         dataset = topmost.data.BasicDatasetHandler(
             os.path.join(DATA_DIR, args.dataset), device=args.device, read_labels=read_labels,
             as_tensor=True, batch_size=args.batch_size)
-
+    print("1.1")
     # create a model
     pretrainWE = scipy.sparse.load_npz(os.path.join(
         DATA_DIR, args.dataset, "word_embeddings.npz")).toarray()
@@ -177,6 +179,7 @@ if __name__ == "__main__":
         model = topmost.models.MODEL_DICT[args.model](vocab_size=dataset.vocab_size,
                                                       num_topics=args.num_topics,
                                                       dropout=args.dropout)
+    print("1.2")
     if args.model == 'YTM':
         model.weight_loss_XGR = args.weight_XGR
         model.weight_loss_ECR = args.weight_ECR
@@ -201,7 +204,7 @@ if __name__ == "__main__":
     elif args.model == 'ECRTM':
         model.weight_loss_ECR = args.weight_ECR
     model = model.to(args.device)
-
+    print("1.3")
     # create a trainer
     if args.model in ['TraCo', 'TraCoECR']:
         trainer = topmost.trainers.HierarchicalTrainer(model, epochs=args.epochs,
@@ -217,9 +220,10 @@ if __name__ == "__main__":
                                                 lr_step_size=args.lr_step_size)
 
     # for _ in range(20):
-
+    print("1.4")
+    print(f"Multi-Objective Optimization Algorithm = {args.MOO_algo}")
     # train the model
-    trainer.train(dataset)
+    trainer.train(dataset, MOO=args.MOO_algo)
     
     torch.save(trainer.model.state_dict(), os.path.join(current_run_dir, 'checkpoint.pt'))
 

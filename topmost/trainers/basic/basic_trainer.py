@@ -5,6 +5,7 @@ from torch.optim.lr_scheduler import StepLR
 from collections import defaultdict
 from topmost.utils import static_utils
 from topmost.models.basic.CombinedTM import CombinedTM
+from topmost.trainers.MOO import MGDA, IMTL, NashMTL
 import wandb
 import logging
 import os
@@ -47,7 +48,7 @@ class BasicTrainer:
 
         return top_words, train_theta
 
-    def train(self, dataset_handler, verbose=False):
+    def train(self, dataset_handler, verbose=False, MOO='IMTL'):
         optimizer = self.make_optimizer()
 
         if self.lr_scheduler:
@@ -67,10 +68,56 @@ class BasicTrainer:
                 rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                 batch_loss = rst_dict['loss']
 
-                optimizer.zero_grad()
-                batch_loss.backward()
-                # torch.nn.utils.clip_grad_norm_(self.model.parameters(), True)
-                optimizer.step()
+                if MOO is not None:
+                    loss_recon = rst_dict['loss_recon']
+                    loss_KL = rst_dict['loss_KL']
+                    loss_ECR = rst_dict['loss_ECR']
+                    loss_DCR = rst_dict['loss_DCR']
+                    loss_TCR = rst_dict['loss_TCR']
+                    losses = [loss_recon, loss_KL, loss_ECR, loss_DCR, loss_TCR]
+                    grads = []
+
+                    for loss in losses:
+                        optimizer.zero_grad()
+                        loss.backward(retain_graph=True)
+                        grad = []
+                        for param in self.model.parameters():
+                            if param.grad is not None:
+                                grad.append(param.grad.view(-1))
+                            else:
+                                grad.append(torch.zeros_like(param).view(-1))
+                        grads.append(torch.cat(grad))
+                    optimizer.zero_grad()
+                    
+                    if MOO == 'MGDA':
+                        algo = MGDA()
+                    elif MOO == 'IMTL':
+                        algo = IMTL()
+                    elif MOO == 'NashMTL':
+                        algo = NashMTL()
+                    else:
+                        print("ERROR !!!")
+                    weights = algo.compute_weights(grads)
+
+                    combined_grad = None
+                    for w, grad in zip(weights, grads):
+                        if combined_grad is None:
+                            combined_grad = w * grad
+                        else:
+                            combined_grad += w * grad
+                    index = 0
+                    for param in self.model.parameters():
+                        param_size = param.numel()
+                        param.grad = combined_grad[index:index+param_size].view(param.shape).clone()
+                        index += param_size
+                    
+                    optimizer.step()
+                else:
+                    optimizer.zero_grad()
+                    batch_loss.backward()
+                    # torch.nn.utils.clip_grad_norm_(self.model.parameters(), True)
+
+                    optimizer.step()
 
                 for key in rst_dict:
                     try:

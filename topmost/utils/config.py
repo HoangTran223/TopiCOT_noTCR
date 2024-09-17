@@ -56,6 +56,8 @@ def add_training_argument(parser):
                             currently support: step')
     parser.add_argument('--lr_step_size', type=int, default=125,
                         help='step size for learning rate scheduler')
+    parser.add_argument('--MOO_algo', type=str, default='IMTL',
+                        help='Multi-Objective Optimization Algorithm')
 
 def add_eval_argument(parser):
     parser.add_argument('--tune_SVM', action='store_true', default=False)
