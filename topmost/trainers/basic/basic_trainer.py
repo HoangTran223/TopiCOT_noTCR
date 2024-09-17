@@ -71,8 +71,8 @@ class BasicTrainer:
                 batch_loss = rst_dict['loss']
 
                 if MOO is not None:
-                    #loss_recon = rst_dict['loss_recon']
-                    #loss_KL = rst_dict['loss_KL']
+                    loss_recon = rst_dict['loss_recon']
+                    loss_KL = rst_dict['loss_KL']
                     loss_ECR = rst_dict['loss_ECR']
                     loss_DCR = rst_dict['loss_DCR']
                     loss_TCR = rst_dict['loss_TCR']
