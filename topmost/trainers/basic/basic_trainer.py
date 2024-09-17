@@ -5,7 +5,9 @@ from torch.optim.lr_scheduler import StepLR
 from collections import defaultdict
 from topmost.utils import static_utils
 from topmost.models.basic.CombinedTM import CombinedTM
-from topmost.trainers.MOO import MGDA, IMTL, NashMTL
+from topmost.trainers.MOO.MGDA import MGDA
+from topmost.trainers.MOO.IMTL import IMTL
+from topmost.trainers.MOO.NashMTL import NashMTL
 import wandb
 import logging
 import os
