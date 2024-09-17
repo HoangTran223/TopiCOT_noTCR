@@ -96,7 +96,7 @@ class BasicTrainer:
                     elif MOO == 'IMTL':
                         algo = IMTL()
                     elif MOO == 'NashMTL':
-                        algo = NashMTL()
+                        algo = NashMTL(num_tasks = len(grads))
                     else:
                         print("ERROR !!!")
                     weights = algo.compute_weights(grads)
