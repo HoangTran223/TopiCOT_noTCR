@@ -9,7 +9,8 @@ class NashMTL:
 
     def compute_weights(self, grads):
         num_tasks = len(grads)
-        grads = [g.view(-1).cpu().numpy() for g in grads]
+        #grads = [g.view(-1).cpu().numpy() for g in grads]
+        grads = [g.view(-1).numpy() for g in grads]
         grads = np.stack(grads)  
 
         G = grads @ grads.T  
