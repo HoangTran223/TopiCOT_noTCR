@@ -16,8 +16,8 @@ class IMTL:
 
         G += 1e-8 * torch.eye(num_tasks).to(G.device)
 
-        G_np = G.cpu().numpy()
-        #G_np = G.numpy()
+        #G_np = G.cpu().numpy()
+        G_np = G.numpy()
         ones = np.ones(num_tasks)
 
         weights = np.linalg.solve(G_np, ones)
