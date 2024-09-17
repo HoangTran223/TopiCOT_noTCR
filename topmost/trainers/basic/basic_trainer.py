@@ -101,7 +101,7 @@ class BasicTrainer:
                         print("ERROR !!!")
                     weights = algo.compute_weights(grads)
 
-                    '''combined_grad = None
+                    combined_grad = None
                     for w, grad in zip(weights, grads):
                         if combined_grad is None:
                             combined_grad = w * grad
@@ -111,12 +111,12 @@ class BasicTrainer:
                     for param in self.model.parameters():
                         param_size = param.numel()
                         param.grad = combined_grad[index:index+param_size].view(param.shape).clone()
-                        index += param_size'''
-                    total_loss = 0
+                        index += param_size
+                    '''total_loss = 0
                     for w, loss in zip(weights, losses):
                         total_loss += w * loss
 
-                    total_loss.backward()
+                    total_loss.backward()'''
                     optimizer.step()
                 else:
                     optimizer.zero_grad()
