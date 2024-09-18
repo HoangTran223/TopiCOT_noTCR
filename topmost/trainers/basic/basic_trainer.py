@@ -8,6 +8,7 @@ from topmost.models.basic.CombinedTM import CombinedTM
 from topmost.trainers.MOO.MGDA import MGDA
 from topmost.trainers.MOO.IMTL import IMTL
 from topmost.trainers.MOO.NashMTL import NashMTL
+from topmost.trainers.MOO.PCGrad import PCGrad
 import wandb
 import logging
 import os
@@ -76,8 +77,8 @@ class BasicTrainer:
                     loss_ECR = rst_dict['loss_ECR']
                     loss_DCR = rst_dict['loss_DCR']
                     loss_TCR = rst_dict['loss_TCR']
-                    #losses = [loss_recon, loss_KL, loss_ECR, loss_DCR, loss_TCR]
-                    losses = [loss_ECR, loss_DCR, loss_TCR]
+                    losses = [loss_recon, loss_KL, loss_ECR, loss_DCR, loss_TCR]
+                    #losses = [loss_ECR, loss_DCR, loss_TCR]
                     grads = []
 
                     for loss in losses:
@@ -94,20 +95,32 @@ class BasicTrainer:
                     
                     if MOO == 'MGDA':
                         algo = MGDA()
+                        weights = algo.compute_weights(grads)
                     elif MOO == 'IMTL':
                         algo = IMTL()
+                        weights = algo.compute_weights(grads)
                     elif MOO == 'NashMTL':
                         algo = NashMTL(num_tasks = len(grads))
+                        weights = algo.compute_weights(grads)
+                    elif MOO == 'PCGrad':
+                        algo = PCGrad()
+                        weights, pc_grads = algo.compute_weights(grads)
                     else:
                         print("ERROR !!!")
-                    weights = algo.compute_weights(grads)
-
+                    
                     combined_grad = None
-                    for w, grad in zip(weights, grads):
-                        if combined_grad is None:
-                            combined_grad = w * grad
-                        else:
-                            combined_grad += w * grad
+                    if MOO != 'PCGrad':
+                        for w, grad in zip(weights, grads):
+                            if combined_grad is None:
+                                combined_grad = w * grad
+                            else:
+                                combined_grad += w * grad
+                    else:
+                        for w, grad in zip(weights, pc_grads):
+                            if combined_grad is None:
+                                combined_grad = w * grad
+                            else:
+                                combined_grad += w * grad
                     index = 0
                     for param in self.model.parameters():
                         param_size = param.numel()
