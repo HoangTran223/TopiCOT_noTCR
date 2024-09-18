@@ -204,7 +204,7 @@ if __name__ == "__main__":
     elif args.model == 'ECRTM':
         model.weight_loss_ECR = args.weight_ECR
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"===> Total trainable parameters: {total_params}")
+    print(f"===> Total parameters: {total_params}")
     total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"===> Total trainable parameters: {total_trainable_params}")
     model = model.to(args.device)
