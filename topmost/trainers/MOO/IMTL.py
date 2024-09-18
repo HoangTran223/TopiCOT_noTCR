@@ -33,7 +33,7 @@ class IMTL:
         
         return weights'''
     
-    def compute_weights_IMTL(self, grads):
+    def compute_weights(self, grads):
         num_tasks = len(grads)
         grads = torch.stack([g.view(-1) for g in grads])
         #grads = torch.stack(grads)  
