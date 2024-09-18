@@ -49,13 +49,14 @@ class OTClusterTM(nn.Module):
 
         if pretrained_WE is not None:
             print("Use Pretrain WE")
+            for param in pretrained_WE.parameters():
+                param.requires_grad = False
             self.word_embeddings = torch.from_numpy(pretrained_WE).float()
         else:
             self.word_embeddings = nn.init.trunc_normal_(
                 torch.empty(vocab_size, embed_size))
         self.word_embeddings = nn.Parameter(F.normalize(self.word_embeddings))
-        for param in self.word_embeddings.parameters():
-            param.requires_grad = False
+        
         self.topic_embeddings = torch.empty(
             (num_topics, self.word_embeddings.shape[1]))
         nn.init.trunc_normal_(self.topic_embeddings, std=0.1)
