@@ -43,9 +43,9 @@ class IMTL:
 
         D = grads[0:1].repeat(num_tasks - 1, 1) - grads[1:]
         #U = grads_unit[0:1].repeat(num_tasks - 1, 1) - grads_unit[1:]
-        #U = (grads / (torch.norm(grads, p=2, dim=-1, keepdim=True) + 1e-8))[0:1].repeat(num_tasks - 1, 1) - (grads / (torch.norm(grads, p=2, dim=-1, keepdim=True) + 1e-8))[1:]
-        A = torch.matmul(D, ((grads / (torch.norm(grads, p=2, dim=-1, keepdim=True) + 1e-8))[0:1].repeat(num_tasks - 1, 1) - (grads / (torch.norm(grads, p=2, dim=-1, keepdim=True) + 1e-8))[1:]).t())  
-        b = torch.matmul(grads[0], ((grads / (torch.norm(grads, p=2, dim=-1, keepdim=True) + 1e-8))[0:1].repeat(num_tasks - 1, 1) - (grads / (torch.norm(grads, p=2, dim=-1, keepdim=True) + 1e-8))[1:]).t())  
+        U = (grads / (torch.norm(grads, p=2, dim=-1, keepdim=True) + 1e-8))[0:1].repeat(num_tasks - 1, 1) - (grads / (torch.norm(grads, p=2, dim=-1, keepdim=True) + 1e-8))[1:]
+        A = torch.matmul(D, U.t())  
+        b = torch.matmul(grads[0], U.t())  
 
         A += 1e-8 * torch.eye(A.size(0)).to(A.device)
 
