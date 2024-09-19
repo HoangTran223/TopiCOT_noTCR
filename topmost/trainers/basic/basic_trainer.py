@@ -55,8 +55,8 @@ class BasicTrainer:
 
     # Sửa lại hàm train để sử dụng SAM
     def train(self, dataset_handler, verbose=False):
-
-        optimizer = SAM(self.model.parameters(), base_optimizer=torch.optim.SGD, rho=0.05, adaptive=False, **kwargs)
+        base_optimizer = torch.optim.SGD
+        optimizer = SAM(self.model.parameters(), base_optimizer, rho=0.05, adaptive=False)
 
         if self.lr_scheduler:
             print("===>using lr_scheduler")
