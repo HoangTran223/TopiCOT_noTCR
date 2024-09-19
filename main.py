@@ -211,12 +211,12 @@ if __name__ == "__main__":
     model = model.to(args.device)
 
     # create a trainer
-    if args.model in ['TraCo', 'TraCoECR']: continue
-        # trainer = topmost.trainers.HierarchicalTrainer(model, epochs=args.epochs,
-        #                                                learning_rate=args.lr,
-        #                                                batch_size=args.batch_size,
-        #                                                lr_scheduler=args.lr_scheduler,
-        #                                                lr_step_size=args.lr_step_size)
+    if args.model in ['TraCo', 'TraCoECR']:
+        trainer = topmost.trainers.HierarchicalTrainer(model, epochs=args.epochs,
+                                                       learning_rate=args.lr,
+                                                      batch_size=args.batch_size,
+                                                        lr_scheduler=args.lr_scheduler,
+                                                       lr_step_size=args.lr_step_size)
     else:
         trainer = topmost.trainers.BasicTrainer(model, epochs=args.epochs,
                                                 learning_rate=args.lr,
