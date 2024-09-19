@@ -18,7 +18,7 @@ from topmost.trainers.basic.SAM import SAM
 
 
 class BasicTrainer:
-    def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5):
+    def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5, rho=0.05):
         self.model = model
         self.epochs = epochs
         self.learning_rate = learning_rate
@@ -26,6 +26,7 @@ class BasicTrainer:
         self.lr_scheduler = lr_scheduler
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
+        self.rho = rho
 
         self.logger = logging.getLogger('main')
 
