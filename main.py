@@ -214,8 +214,13 @@ if __name__ == "__main__":
     if args.model in ['TraCo', 'TraCoECR']:
         trainer = topmost.trainers.HierarchicalTrainer(model, epochs=args.epochs,
                                                        learning_rate=args.lr,
+<<<<<<< HEAD
                                                        batch_size=args.batch_size,
                                                        lr_scheduler=args.lr_scheduler,
+=======
+                                                      batch_size=args.batch_size,
+                                                        lr_scheduler=args.lr_scheduler,
+>>>>>>> e1ad152bfa3b8b70034d2bb4e09936c03c05e94e
                                                        lr_step_size=args.lr_step_size)
     else:
         trainer = topmost.trainers.BasicTrainer(model, epochs=args.epochs,
@@ -223,9 +228,13 @@ if __name__ == "__main__":
                                                 batch_size=args.batch_size,
                                                 lr_scheduler=args.lr_scheduler,
                                                 lr_step_size=args.lr_step_size,
+<<<<<<< HEAD
                                                 rho=args.rho
                                                 )       
 
+=======
+                                                rho=args.rho)
+>>>>>>> e1ad152bfa3b8b70034d2bb4e09936c03c05e94e
 
     # train the model
     # trainer.train(dataset, MOO=args.MOO_algo)
