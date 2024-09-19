@@ -14,11 +14,11 @@ import logging
 import os
 import scipy
 import torch.optim
-from topmost.trainers.basic.SAM import SAM
+from topmost.trainers.SAM import SAM
 
 
 class BasicTrainer:
-    def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5):
+    def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5, rho=0.05):
         self.model = model
         self.epochs = epochs
         self.learning_rate = learning_rate
@@ -26,16 +26,23 @@ class BasicTrainer:
         self.lr_scheduler = lr_scheduler
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
+        self.rho = rho 
 
         self.logger = logging.getLogger('main')
 
     def make_optimizer(self,):
-        args_dict = {
-            'params': self.model.parameters(),
-            'lr': self.learning_rate,
-        }
-        optimizer = SAM(**args_dict)
+        # args_dict = {
+        #     'params': self.model.parameters(),
+        #     'lr': self.learning_rate,
+        #     'rho': self.rho,
+        # }
         # optimizer = torch.optim.Adam(**args_dict)
+        optimizer = SAM(
+            params=self.model.parameters(),
+            base_optimizer=lambda params, **kwargs: torch.optim.SGD(params, **kwargs), 
+            rho=self.rho,
+            lr=self.learning_rate,  # Thay đổi nếu cần thiết
+            )
         return optimizer
 
     def make_lr_scheduler(self, optimizer):
@@ -55,8 +62,9 @@ class BasicTrainer:
 
     # Sửa lại hàm train để sử dụng SAM
     def train(self, dataset_handler, verbose=False):
-        base_optimizer = torch.optim.SGD
-        optimizer = SAM(self.model.parameters(), base_optimizer, rho=0.05, adaptive=False)
+        optimizer = self.make_optimizer()
+        # base_optimizer = torch.optim.SGD
+        # optimizer = SAM(self.model.parameters(), base_optimizer, rho=0.05, adaptive=False)
 
         if self.lr_scheduler:
             print("===>using lr_scheduler")
