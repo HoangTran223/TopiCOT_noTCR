@@ -14,7 +14,7 @@ import logging
 import os
 import scipy
 import torch.optim
-from topmost.trainers.SAM import SAM
+from topmost.trainers.SAM_function import SAM
 
 
 class BasicTrainer:
@@ -27,12 +27,7 @@ class BasicTrainer:
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
 
-<<<<<<< HEAD
-
-        self.rho = rho
-=======
         self.rho = rho 
->>>>>>> e1ad152bfa3b8b70034d2bb4e09936c03c05e94e
         self.logger = logging.getLogger('main')
 
     def make_optimizer(self,):
@@ -48,10 +43,8 @@ class BasicTrainer:
             base_optimizer,
             lr=self.learning_rate,
             rho=self.rho)
-            
-        return optimizer
 
-def __init__(self, params, base_optimizer, lr, rho=0.05, adaptive=False):
+        return optimizer
 
     def make_lr_scheduler(self, optimizer):
         if self.lr_scheduler == "StepLR":
