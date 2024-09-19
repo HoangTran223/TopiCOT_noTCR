@@ -25,7 +25,6 @@ class HierarchicalTrainer:
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
         self.rho = rho
-
         self.logger = logging.getLogger('main')
 
     def make_optimizer(self,):

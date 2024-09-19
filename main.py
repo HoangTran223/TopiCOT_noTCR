@@ -223,12 +223,7 @@ if __name__ == "__main__":
                                                 batch_size=args.batch_size,
                                                 lr_scheduler=args.lr_scheduler,
                                                 lr_step_size=args.lr_step_size,
-<<<<<<< HEAD
-                                                rho=args.rho
-                                                )     
-=======
                                                 rho=args.rho)
->>>>>>> 92b86cb932da9d85b624238d7f52b22398992e25
 
     # train the model
     # trainer.train(dataset, MOO=args.MOO_algo)
