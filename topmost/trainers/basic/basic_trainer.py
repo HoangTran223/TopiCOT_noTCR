@@ -26,12 +26,9 @@ class BasicTrainer:
         self.lr_scheduler = lr_scheduler
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
-<<<<<<< HEAD
-        self.rho = rho 
-=======
-        self.rho = rho
->>>>>>> aacbd537393afaf3192b33a8fa1fdfd2b9e3e3f6
 
+
+        self.rho = rho
         self.logger = logging.getLogger('main')
 
     def make_optimizer(self,):
@@ -41,13 +38,16 @@ class BasicTrainer:
         #     'rho': self.rho,
         # }
         # optimizer = torch.optim.Adam(**args_dict)
+        base_optimizer = torch.optim.SGD
         optimizer = SAM(
-            params=self.model.parameters(),
-            base_optimizer=lambda params, **kwargs: torch.optim.SGD(params, **kwargs), 
-            rho=self.rho,
-            lr=self.learning_rate,  # Thay đổi nếu cần thiết
-            )
+            self.model.parameters(),
+            base_optimizer,
+            lr=self.learning_rate,
+            rho=self.rho)
+            
         return optimizer
+
+def __init__(self, params, base_optimizer, lr, rho=0.05, adaptive=False):
 
     def make_lr_scheduler(self, optimizer):
         if self.lr_scheduler == "StepLR":
