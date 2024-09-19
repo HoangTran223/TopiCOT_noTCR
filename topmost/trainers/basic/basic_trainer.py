@@ -27,10 +27,6 @@ class BasicTrainer:
         self.lr_scheduler = lr_scheduler
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
-<<<<<<< HEAD
-
-=======
->>>>>>> c39ac2eafd40425dee12aa7e31a5707fc25bc04e
         self.rho = rho 
         self.logger = logging.getLogger('main')
 
