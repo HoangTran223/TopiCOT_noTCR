@@ -26,12 +26,7 @@ class BasicTrainer:
         self.lr_scheduler = lr_scheduler
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
-
-<<<<<<< HEAD
         self.rho = rho 
-=======
-        self.rho = rho
->>>>>>> 92b86cb932da9d85b624238d7f52b22398992e25
         self.logger = logging.getLogger('main')
 
     def make_optimizer(self,):
