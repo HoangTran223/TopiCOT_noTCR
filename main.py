@@ -223,8 +223,12 @@ if __name__ == "__main__":
                                                 batch_size=args.batch_size,
                                                 lr_scheduler=args.lr_scheduler,
                                                 lr_step_size=args.lr_step_size,
+<<<<<<< HEAD
                                                 rho=arg,
                                                 )
+=======
+                                                rho=arg.rho)
+>>>>>>> aacbd537393afaf3192b33a8fa1fdfd2b9e3e3f6
 
 
     # train the model
