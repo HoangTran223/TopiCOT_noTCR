@@ -216,8 +216,6 @@ if __name__ == "__main__":
                                                        learning_rate=args.lr,
                                                        batch_size=args.batch_size,
                                                        lr_scheduler=args.lr_scheduler,
-                                                       batch_size=args.batch_size,
-                                                       lr_scheduler=args.lr_scheduler,
                                                        lr_step_size=args.lr_step_size)
     else:
         trainer = topmost.trainers.BasicTrainer(model, epochs=args.epochs,
