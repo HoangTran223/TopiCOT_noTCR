@@ -222,6 +222,7 @@ if __name__ == "__main__":
                                                 learning_rate=args.lr,
                                                 batch_size=args.batch_size,
                                                 lr_scheduler=args.lr_scheduler,
+<<<<<<< HEAD
                                                 lr_step_size=args.lr_step_size)
                                                 # rho=args.rho
                                                 
@@ -235,6 +236,11 @@ if __name__ == "__main__":
     #                                             lr_step_size=args.lr_step_size,
     #                                             rho=args.rho)
 
+=======
+                                                lr_step_size=args.lr_step_size,
+                                                rho=args.rho)
+        
+>>>>>>> 87b2bba2867e130f2d184023a1ddfdb431a0133a
     # train the model
     # trainer.train(dataset, MOO=args.MOO_algo)
 
