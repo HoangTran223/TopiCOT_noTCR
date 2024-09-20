@@ -51,7 +51,6 @@ if __name__ == "__main__":
             os.path.join(DATA_DIR, args.dataset), device=args.device, read_labels=read_labels,
             as_tensor=True, batch_size=args.batch_size)
  
-
     # create a model
     pretrainWE = scipy.sparse.load_npz(os.path.join(
         DATA_DIR, args.dataset, "word_embeddings.npz")).toarray()
@@ -217,17 +216,24 @@ if __name__ == "__main__":
                                                        batch_size=args.batch_size,
                                                        lr_scheduler=args.lr_scheduler,
                                                        lr_step_size=args.lr_step_size)
+
     else:
         trainer = topmost.trainers.BasicTrainer(model, epochs=args.epochs,
                                                 learning_rate=args.lr,
                                                 batch_size=args.batch_size,
                                                 lr_scheduler=args.lr_scheduler,
-                                                lr_step_size=args.lr_step_size,
-                                                rho=args.rho)
-<<<<<<< HEAD
-=======
+                                                lr_step_size=args.lr_step_size)
+                                                # rho=args.rho
+                                                
 
->>>>>>> c39ac2eafd40425dee12aa7e31a5707fc25bc04e
+    # Với SAM                                        
+    # else:
+    #     trainer = topmost.trainers.BasicTrainer(model, epochs=args.epochs,
+    #                                             learning_rate=args.lr,
+    #                                             batch_size=args.batch_size,
+    #                                             lr_scheduler=args.lr_scheduler,
+    #                                             lr_step_size=args.lr_step_size,
+    #                                             rho=args.rho)
 
     # train the model
     # trainer.train(dataset, MOO=args.MOO_algo)
