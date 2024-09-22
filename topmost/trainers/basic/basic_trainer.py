@@ -10,7 +10,8 @@ import logging
 import os
 import scipy
 import torch.optim
-# from topmost.trainers.SAM_function.SAM import SAM
+
+from topmost.trainers.SAM_function.SAM import SAM
 
 
 
@@ -23,23 +24,23 @@ class BasicTrainer:
         self.lr_scheduler = lr_scheduler
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
-        # self.rho = rho 
+        self.rho = rho 
         self.logger = logging.getLogger('main')
 
     def make_optimizer(self,):
-        args_dict = {
-            'params': self.model.parameters(),
-            'lr': self.learning_rate,
-        }
-        optimizer = torch.optim.Adam(**args_dict)
+        # args_dict = {
+        #     'params': self.model.parameters(),
+        #     'lr': self.learning_rate,
+        # }
+        # optimizer = torch.optim.Adam(**args_dict)
 
         # SAM
-        # base_optimizer = torch.optim.SGD
-        # optimizer = SAM(
-        #     self.model.parameters(),
-        #     base_optimizer,
-        #     lr=self.learning_rate,
-        #     rho=self.rho)
+        base_optimizer = torch.optim.SGD
+        optimizer = SAM(
+            self.model.parameters(),
+            base_optimizer,
+            lr=self.learning_rate,
+            rho=self.rho)
 
         return optimizer
 
@@ -58,38 +59,8 @@ class BasicTrainer:
 
         return top_words, train_theta
 
-    def train(self, dataset_handler, verbose=False):
-        optimizer = self.make_optimizer()
-
-        if self.lr_scheduler:
-            print("===>using lr_scheduler")
-            self.logger.info("===>using lr_scheduler")
-            lr_scheduler = self.make_lr_scheduler(optimizer)
-
-        data_size = len(dataset_handler.train_dataloader.dataset)
-
-        for epoch in tqdm(range(1, self.epochs + 1)):
-            self.model.train()
-            loss_rst_dict = defaultdict(float)
-            wandb.log({'epoch': epoch})
-
-            for batch_idx, batch_data in enumerate(dataset_handler.train_dataloader):
-
-                rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-                batch_loss = rst_dict['loss']
-
-                optimizer.zero_grad()
-                batch_loss.backward()
-                # torch.nn.utils.clip_grad_norm_(self.model.parameters(), True)
-                optimizer.step()
-
-
-
-    # Sửa lại hàm train để sử dụng SAM
     # def train(self, dataset_handler, verbose=False):
     #     optimizer = self.make_optimizer()
-    #     # base_optimizer = torch.optim.SGD
-    #     # optimizer = SAM(self.model.parameters(), base_optimizer, rho=0.05, adaptive=False)
 
     #     if self.lr_scheduler:
     #         print("===>using lr_scheduler")
@@ -107,15 +78,46 @@ class BasicTrainer:
 
     #             rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
     #             batch_loss = rst_dict['loss']
-    #             batch_loss.mean().backward()
-                
-    #             optimizer.first_step(zero_grad=True)
 
-    #             rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-    #             batch_loss_adv = rst_dict_adv['loss']
-    #             batch_loss_adv.mean().backward()
+    #             optimizer.zero_grad()
+    #             batch_loss.backward()
+    #             # torch.nn.utils.clip_grad_norm_(self.model.parameters(), True)
+    #             optimizer.step()
+
+
+
+    # Sửa lại hàm train để sử dụng SAM
+    def train(self, dataset_handler, verbose=False):
+        # optimizer = self.make_optimizer()
+        base_optimizer = torch.optim.SGD
+        optimizer = SAM(self.model.parameters(), base_optimizer, rho=0.05, adaptive=False)
+
+        if self.lr_scheduler:
+            print("===>using lr_scheduler")
+            self.logger.info("===>using lr_scheduler")
+            lr_scheduler = self.make_lr_scheduler(optimizer)
+
+        data_size = len(dataset_handler.train_dataloader.dataset)
+
+        for epoch in tqdm(range(1, self.epochs + 1)):
+            self.model.train()
+            loss_rst_dict = defaultdict(float)
+            wandb.log({'epoch': epoch})
+
+            for batch_idx, batch_data in enumerate(dataset_handler.train_dataloader):
+
+                rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
+                batch_loss = rst_dict['loss']
+                optimizer.zero_grad()
+                batch_loss.mean().backward()
+                
+                optimizer.first_step(zero_grad=True)
+
+                rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
+                batch_loss_adv = rst_dict_adv['loss']
+                batch_loss_adv.mean().backward()
             
-    #             optimizer.second_step(zero_grad=True)
+                optimizer.second_step(zero_grad=True)
 
                 # if MOO is not None:
                 #     loss_recon = rst_dict['loss_recon']

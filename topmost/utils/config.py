@@ -50,8 +50,8 @@ def add_training_argument(parser):
                         help='learning rate')
 
     # SAM
-    # parser.add_argument('--rho', type=float, default=0.005,
-    #                     help='rho')  
+    parser.add_argument('--rho', type=float, default=0.05,
+                        help='rho')  
 
 
     parser.add_argument('--device', type=str, default='cuda',
