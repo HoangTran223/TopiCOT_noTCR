@@ -93,7 +93,7 @@ class BasicTrainer():
     def train(self, dataset_handler, verbose=False):
         # optimizer = self.make_optimizer()
 
-        accumulation_steps = 4
+        accumulation_steps = 32
         base_optimizer = torch.optim.SGD
         optimizer = SAM(self.model.parameters(), base_optimizer, rho=0.05, adaptive=False)
 
