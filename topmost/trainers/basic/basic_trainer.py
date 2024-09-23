@@ -13,13 +13,14 @@ import torch.optim
 
 # Thêm
 from topmost.trainers.SAM_function.SAM import SAM
+from topmost.trainers.SAM_function.SAM import FSAM
 
 # Thêm
 from pytorch_lightning import LightningModule
 
 
 class BasicTrainer():
-    def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5, rho=0.05):
+    def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5, rho=0.05, sigma=1, lmbda=0.9, device = 'cuda'):
         self.model = model
         self.epochs = epochs
         self.learning_rate = learning_rate
@@ -28,18 +29,24 @@ class BasicTrainer():
         self.lr_step_size = lr_step_size
         self.log_interval = log_interval
         self.rho = rho 
+        self.sigma = sigma
+        self.lmbda = lmbda
+        self.device = device
         self.logger = logging.getLogger('main')
 
     def make_sam_optimizer(self,):
-        # SAM
-        base_optimizer = torch.optim.SGD
-        optimizer = SAM(
+        # FSAM
+        optimizer = FSAM(
             self.model.parameters(),
             base_optimizer,
+            device=self.device,
             lr=self.learning_rate,
-            rho=self.rho)
-        
+            rho=self.rho,
+            sigma=self.sigma,
+            lmbda=self.lmbda) 
+
         return optimizer
+
 
     def make_adam_optimizer(self):
         args_dict = {

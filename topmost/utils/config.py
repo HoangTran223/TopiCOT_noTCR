@@ -53,6 +53,12 @@ def add_training_argument(parser):
     parser.add_argument('--rho', type=float, default=0.05,
                         help='rho')  
 
+    # FSAM
+    parser.add_argument('--sigma', type=float, default=1,
+                        help='sigma') 
+    parser.add_argument('--lmbda', type=float, default=0.9,
+                        help='lmbda') 
+
 
     parser.add_argument('--device', type=str, default='cuda',
                         help='device to run the model, cuda or cpu')
