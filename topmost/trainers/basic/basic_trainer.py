@@ -93,6 +93,8 @@ class BasicTrainer(LightningModule):
     # Sửa lại hàm train để sử dụng SAM
     def train(self, dataset_handler, verbose=False):
         # optimizer = self.make_optimizer()
+
+        accumulation_steps = 8
         base_optimizer = torch.optim.SGD
         optimizer = SAM(self.model.parameters(), base_optimizer, rho=0.05, adaptive=False)
 
@@ -111,7 +113,7 @@ class BasicTrainer(LightningModule):
             for batch_idx, batch_data in enumerate(dataset_handler.train_dataloader):
 
                 rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-                batch_loss = rst_dict['loss']
+                batch_loss = rst_dict['loss'] / accumulation_steps
                 # optimizer.zero_grad()
                 # batch_loss.mean().backward()
 
@@ -119,17 +121,29 @@ class BasicTrainer(LightningModule):
 
                 self.manual_backward(batch_loss, optimizer)
                 
-                optimizer.first_step(zero_grad=True)
+                if (batch_idx + 1) % accumulation_steps == 0:
 
-                rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-                batch_loss_adv = rst_dict_adv['loss']
+                    optimizer.first_step(zero_grad=True)
+
+                    rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
+                    batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
                 # batch_loss_adv.mean().backward()
 
                 # batch_loss_adv.backward()
 
-                self.manual_backward(batch_loss_adv, optimizer)
+                    self.manual_backward(batch_loss_adv, optimizer)
 
-                optimizer.second_step(zero_grad=True)
+                    optimizer.second_step(zero_grad=True)
+                
+                if (batch_idx + 1) % accumulation_steps != 0 and (batch_idx + 1) == len(dataset_handler.train_dataloader):
+                    optimizer.first_step(zero_grad=True)
+
+                    rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
+                    batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
+
+                    self.manual_backward(batch_loss_adv, optimizer)
+
+                    optimizer.second_step(zero_grad=True)
 
                 # if MOO is not None:
                 #     loss_recon = rst_dict['loss_recon']
