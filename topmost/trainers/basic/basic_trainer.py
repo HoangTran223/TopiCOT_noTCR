@@ -108,14 +108,16 @@ class BasicTrainer:
 
                 rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                 batch_loss = rst_dict['loss']
-                optimizer.zero_grad()
-                batch_loss.mean().backward()
+                # optimizer.zero_grad()
+                # batch_loss.mean().backward()
+                batch_loss.backward()
                 
                 optimizer.first_step(zero_grad=True)
 
                 rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                 batch_loss_adv = rst_dict_adv['loss']
-                batch_loss_adv.mean().backward()
+                # batch_loss_adv.mean().backward()
+                batch_loss_adv.backward()
             
                 optimizer.second_step(zero_grad=True)
 
