@@ -38,6 +38,8 @@ class BasicTrainer():
             base_optimizer,
             lr=self.learning_rate,
             rho=self.rho)
+        
+        return optimizer
 
     def make_adam_optimizer(self):
         args_dict = {
