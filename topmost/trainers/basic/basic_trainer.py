@@ -116,9 +116,9 @@ class BasicTrainer():
                 # optimizer.zero_grad()
                 # batch_loss.mean().backward()
 
-                # batch_loss.backward()
+                batch_loss.backward()
 
-                LightningModule.manual_backward(batch_loss, optimizer)
+                # LightningModule.manual_backward(batch_loss, optimizer)
                 
                 if (batch_idx + 1) % accumulation_steps == 0:
 
@@ -130,8 +130,8 @@ class BasicTrainer():
 
                 # batch_loss_adv.backward()
 
-                    LightningModule.manual_backward(batch_loss_adv, optimizer)
-
+                    # LightningModule.manual_backward(batch_loss_adv, optimizer)
+                    batch_loss_adv.backward()
                     optimizer.second_step(zero_grad=True)
                 
                 if (batch_idx + 1) % accumulation_steps != 0 and (batch_idx + 1) == len(dataset_handler.train_dataloader):
