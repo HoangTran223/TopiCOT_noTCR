@@ -11,12 +11,16 @@ import os
 import scipy
 import torch.optim
 
+# Thêm
 from topmost.trainers.SAM_function.SAM import SAM
 
+# Thêm
+from pytorch_lightning import LightningModule
 
 
-class BasicTrainer:
+class BasicTrainer(LightningModule):
     def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5, rho=0.05):
+        super().__init__()
         self.model = model
         self.epochs = epochs
         self.learning_rate = learning_rate
@@ -110,15 +114,21 @@ class BasicTrainer:
                 batch_loss = rst_dict['loss']
                 # optimizer.zero_grad()
                 # batch_loss.mean().backward()
-                batch_loss.backward()
+
+                # batch_loss.backward()
+
+                self.manual_backward(batch_loss, optimizer)
                 
                 optimizer.first_step(zero_grad=True)
 
                 rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                 batch_loss_adv = rst_dict_adv['loss']
                 # batch_loss_adv.mean().backward()
-                batch_loss_adv.backward()
-            
+
+                # batch_loss_adv.backward()
+
+                self.manual_backward(batch_loss_adv, optimizer)
+
                 optimizer.second_step(zero_grad=True)
 
                 # if MOO is not None:
