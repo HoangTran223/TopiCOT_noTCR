@@ -18,9 +18,8 @@ from topmost.trainers.SAM_function.SAM import SAM
 from pytorch_lightning import LightningModule
 
 
-class BasicTrainer(LightningModule):
+class BasicTrainer():
     def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5, rho=0.05):
-        super().__init__()
         self.model = model
         self.epochs = epochs
         self.learning_rate = learning_rate
@@ -119,7 +118,7 @@ class BasicTrainer(LightningModule):
 
                 # batch_loss.backward()
 
-                self.manual_backward(batch_loss, optimizer)
+                LightningModule.manual_backward(batch_loss, optimizer)
                 
                 if (batch_idx + 1) % accumulation_steps == 0:
 
@@ -131,7 +130,7 @@ class BasicTrainer(LightningModule):
 
                 # batch_loss_adv.backward()
 
-                    self.manual_backward(batch_loss_adv, optimizer)
+                    LightningModule.manual_backward(batch_loss_adv, optimizer)
 
                     optimizer.second_step(zero_grad=True)
                 
@@ -141,7 +140,7 @@ class BasicTrainer(LightningModule):
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
 
-                    self.manual_backward(batch_loss_adv, optimizer)
+                    LightningModule.manual_backward(batch_loss_adv, optimizer)
 
                     optimizer.second_step(zero_grad=True)
 
