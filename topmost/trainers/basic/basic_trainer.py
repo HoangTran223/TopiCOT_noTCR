@@ -140,7 +140,8 @@ class BasicTrainer():
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
 
-                    LightningModule.manual_backward(batch_loss_adv, optimizer)
+                    # LightningModule.manual_backward(batch_loss_adv, optimizer)
+                    batch_loss_adv.backward()
 
                     optimizer.second_step(zero_grad=True)
 
