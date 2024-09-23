@@ -30,13 +30,7 @@ class BasicTrainer():
         self.rho = rho 
         self.logger = logging.getLogger('main')
 
-    def make_optimizer(self,):
-        # args_dict = {
-        #     'params': self.model.parameters(),
-        #     'lr': self.learning_rate,
-        # }
-        # optimizer = torch.optim.Adam(**args_dict)
-
+    def make_sam_optimizer(self,):
         # SAM
         base_optimizer = torch.optim.SGD
         optimizer = SAM(
@@ -45,57 +39,19 @@ class BasicTrainer():
             lr=self.learning_rate,
             rho=self.rho)
 
+    def make_adam_optimizer(self):
+        args_dict = {
+            'params': self.model.parameters(),
+            'lr': self.learning_rate,
+        }
+        optimizer = torch.optim.Adam(**args_dict)
         return optimizer
 
-    def make_lr_scheduler(self, optimizer):
-        if self.lr_scheduler == "StepLR":
-            lr_scheduler = StepLR(
-                optimizer, step_size=self.lr_step_size, gamma=0.5, verbose=False)
-        else:
-            raise NotImplementedError(self.lr_scheduler)
-        return lr_scheduler
 
-    def fit_transform(self, dataset_handler, num_top_words=15, verbose=False):
-        self.train(dataset_handler, verbose)
-        top_words = self.export_top_words(dataset_handler.vocab, num_top_words)
-        train_theta = self.test(dataset_handler.train_data)
-
-        return top_words, train_theta
-
-    # def train(self, dataset_handler, verbose=False):
-    #     optimizer = self.make_optimizer()
-
-    #     if self.lr_scheduler:
-    #         print("===>using lr_scheduler")
-    #         self.logger.info("===>using lr_scheduler")
-    #         lr_scheduler = self.make_lr_scheduler(optimizer)
-
-    #     data_size = len(dataset_handler.train_dataloader.dataset)
-
-    #     for epoch in tqdm(range(1, self.epochs + 1)):
-    #         self.model.train()
-    #         loss_rst_dict = defaultdict(float)
-    #         wandb.log({'epoch': epoch})
-
-    #         for batch_idx, batch_data in enumerate(dataset_handler.train_dataloader):
-
-    #             rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-    #             batch_loss = rst_dict['loss']
-
-    #             optimizer.zero_grad()
-    #             batch_loss.backward()
-    #             # torch.nn.utils.clip_grad_norm_(self.model.parameters(), True)
-    #             optimizer.step()
-
-
-
-    # Sửa lại hàm train để sử dụng SAM
     def train(self, dataset_handler, verbose=False):
-        # optimizer = self.make_optimizer()
-
         accumulation_steps = 8
-        base_optimizer = torch.optim.SGD
-        optimizer = SAM(self.model.parameters(), base_optimizer, rho=0.05, adaptive=False)
+        adam_optimizer = self.make_adam_optimizer()
+        sam_optimizer = self.make_sam_optimizer()  
 
         if self.lr_scheduler:
             print("===>using lr_scheduler")
@@ -112,104 +68,33 @@ class BasicTrainer():
             for batch_idx, batch_data in enumerate(dataset_handler.train_dataloader):
 
                 rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-                batch_loss = rst_dict['loss'] / accumulation_steps
-                # optimizer.zero_grad()
-                # batch_loss.mean().backward()
-
+                batch_loss = rst_dict['loss']
                 batch_loss.backward()
-
-                # LightningModule.manual_backward(batch_loss, optimizer)
+                # batch_loss = rst_dict['loss'] / accumulation_steps
                 
                 if (batch_idx + 1) % accumulation_steps == 0:
 
-                    optimizer.first_step(zero_grad=True)
+                    sam_optimizer.first_step(zero_grad=True)
 
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
-                # batch_loss_adv.mean().backward()
-
-                # batch_loss_adv.backward()
-
-                    # LightningModule.manual_backward(batch_loss_adv, optimizer)
                     batch_loss_adv.backward()
-                    optimizer.second_step(zero_grad=True)
+
+                    sam_optimizer.second_step(zero_grad=True)
                 
-                if (batch_idx + 1) % accumulation_steps != 0 and (batch_idx + 1) == len(dataset_handler.train_dataloader):
-                    optimizer.first_step(zero_grad=True)
+                elif (batch_idx + 1) % accumulation_steps != 0 and (batch_idx + 1) == len(dataset_handler.train_dataloader):
 
+                    sam_optimizer.first_step(zero_grad=True)
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
-
-                    # LightningModule.manual_backward(batch_loss_adv, optimizer)
                     batch_loss_adv.backward()
 
-                    optimizer.second_step(zero_grad=True)
+                    sam_optimizer.second_step(zero_grad=True)
+                
+                else:
+                    adam_optimizer.step()
+                    adam_optimizer.zero_grad()
 
-                # if MOO is not None:
-                #     loss_recon = rst_dict['loss_recon']
-                #     loss_KL = rst_dict['loss_KL']
-                #     loss_ECR = rst_dict['loss_ECR']
-                #     loss_DCR = rst_dict['loss_DCR']
-                #     loss_TCR = rst_dict['loss_TCR']
-                #     losses = [loss_recon, loss_KL, loss_ECR, loss_DCR, loss_TCR]
-                #     #losses = [loss_ECR, loss_DCR, loss_TCR]
-                #     grads = []
-
-                #     for loss in losses:
-                #         optimizer.zero_grad()
-                #         loss.backward(retain_graph=True)
-                #         grad = []
-                #         for param in self.model.parameters():
-                #             if param.grad is not None:
-                #                 grad.append(param.grad.view(-1))
-                #             else:
-                #                 grad.append(torch.zeros_like(param).view(-1))
-                #         grads.append(torch.cat(grad))
-                #     optimizer.zero_grad()
-                    
-                #     if MOO == 'MGDA':
-                #         algo = MGDA()
-                #         weights = algo.compute_weights(grads)
-                #     elif MOO == 'IMTL':
-                #         algo = IMTL()
-                #         weights = algo.compute_weights(grads)
-                #     elif MOO == 'NashMTL':
-                #         algo = NashMTL(num_tasks = len(grads))
-                #         weights = algo.compute_weights(grads)
-                #     elif MOO == 'PCGrad':
-                #         algo = PCGrad()
-                #         weights, pc_grads = algo.compute_weights(grads)
-                #     else:
-                #         print("ERROR !!!")
-                    
-                #     combined_grad = None
-                #     if MOO != 'PCGrad':
-                #         for w, grad in zip(weights, grads):
-                #             if combined_grad is None:
-                #                 combined_grad = w * grad
-                #             else:
-                #                 combined_grad += w * grad
-                #     else:
-                #         for w, grad in zip(weights, pc_grads):
-                #             if combined_grad is None:
-                #                 combined_grad = w * grad
-                #             else:
-                #                 combined_grad += w * grad
-                #     index = 0
-                #     for param in self.model.parameters():
-                #         param_size = param.numel()
-                #         param.grad = combined_grad[index:index+param_size].view(param.shape).clone()
-                #         index += param_size
-                #     '''total_loss = 0
-                #     for w, loss in zip(weights, losses):
-                #         total_loss += w * loss
-
-                #     total_loss.backward()'''
-                #     optimizer.step()
-                # else:
-                    # optimizer.zero_grad()
-                    # batch_loss.backward()
-                    # torch.nn.utils.clip_grad_norm_(self.model.parameters(), True)
 
                 for key in rst_dict:
                     try:
