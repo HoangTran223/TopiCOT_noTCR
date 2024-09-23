@@ -47,6 +47,20 @@ class BasicTrainer():
         optimizer = torch.optim.Adam(**args_dict)
         return optimizer
 
+    def make_lr_scheduler(self, optimizer):
+        if self.lr_scheduler == "StepLR":
+            lr_scheduler = StepLR(
+                optimizer, step_size=self.lr_step_size, gamma=0.5, verbose=False)
+        else:
+            raise NotImplementedError(self.lr_scheduler)
+        return lr_scheduler
+
+    def fit_transform(self, dataset_handler, num_top_words=15, verbose=False):
+        self.train(dataset_handler, verbose)
+        top_words = self.export_top_words(dataset_handler.vocab, num_top_words)
+        train_theta = self.test(dataset_handler.train_data)
+
+        return top_words, train_theta
 
     def train(self, dataset_handler, verbose=False):
         accumulation_steps = 8
