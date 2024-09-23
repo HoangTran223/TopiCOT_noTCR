@@ -58,6 +58,8 @@ def add_training_argument(parser):
                         help='sigma') 
     parser.add_argument('--lmbda', type=float, default=0.9,
                         help='lmbda') 
+    parser.add_argument('--acc_step', type=float, default=8,
+                        help='acc_step') 
 
 
     parser.add_argument('--device', type=str, default='cuda',

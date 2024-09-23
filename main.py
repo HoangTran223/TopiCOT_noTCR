@@ -222,7 +222,10 @@ if __name__ == "__main__":
                                                 batch_size=args.batch_size,
                                                 lr_scheduler=args.lr_scheduler,
                                                 lr_step_size=args.lr_step_size,
-                                                rho=args.rho)
+                                                rho=args.rho,
+                                                sigma=args.sigma,
+                                                lmbda=args.lmbda,
+                                                acc_step=args.step)
                                                 # rho=args.rho
                                                 
 

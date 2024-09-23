@@ -20,7 +20,7 @@ from pytorch_lightning import LightningModule
 
 
 class BasicTrainer():
-    def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5, rho=0.05, sigma=1, lmbda=0.9, device = 'cuda'):
+    def __init__(self, model, epochs=200, learning_rate=0.002, batch_size=200, lr_scheduler=None, lr_step_size=125, log_interval=5, rho=0.05, sigma=1, lmbda=0.9, device = 'cuda', acc_step=8):
         self.model = model
         self.epochs = epochs
         self.learning_rate = learning_rate
@@ -32,6 +32,8 @@ class BasicTrainer():
         self.sigma = sigma
         self.lmbda = lmbda
         self.device = device
+        # Them
+        self.acc_step = acc_step
         self.logger = logging.getLogger('main')
 
     def make_sam_optimizer(self,):
@@ -73,7 +75,7 @@ class BasicTrainer():
         return top_words, train_theta
 
     def train(self, dataset_handler, verbose=False):
-        accumulation_steps = 8
+        accumulation_steps = self.acc_step
         adam_optimizer = self.make_adam_optimizer()
         sam_optimizer = self.make_sam_optimizer()  
 
