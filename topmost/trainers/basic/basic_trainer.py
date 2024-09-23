@@ -13,7 +13,7 @@ import torch.optim
 
 # Thêm
 from topmost.trainers.SAM_function.SAM import SAM
-from topmost.trainers.SAM_function.SAM import FSAM
+from topmost.trainers.SAM_function.FSAM import FSAM
 
 # Thêm
 from pytorch_lightning import LightningModule
