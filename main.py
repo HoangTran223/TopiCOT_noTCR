@@ -225,7 +225,7 @@ if __name__ == "__main__":
                                                 rho=args.rho,
                                                 sigma=args.sigma,
                                                 lmbda=args.lmbda,
-                                                acc_step=args.step)
+                                                acc_step=args.acc_step)
                                                 # rho=args.rho
                                                 
 
