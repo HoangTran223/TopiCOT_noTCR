@@ -13,7 +13,7 @@ import torch.optim
 
 # Thêm
 from topmost.trainers.SAM_function.SAM import SAM
-from topmost.trainers.SAM_function.FSAM import FSAM
+from topmost.trainers.SAM_function.SAM import FSAM
 
 # Thêm
 from pytorch_lightning import LightningModule
@@ -35,6 +35,7 @@ class BasicTrainer():
         self.logger = logging.getLogger('main')
 
     def make_sam_optimizer(self,):
+        base_optimizer = torch.optim.SGD
         # FSAM
         optimizer = FSAM(
             self.model.parameters(),
