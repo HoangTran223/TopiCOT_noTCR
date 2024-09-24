@@ -13,7 +13,7 @@ import torch.optim
 
 # Thêm
 from topmost.trainers.SAM_function.SAM import SAM
-from topmost.trainers.SAM_function.SAM import FSAM
+from topmost.trainers.SAM_function.FSAM import FSAM
 
 # Thêm
 from pytorch_lightning import LightningModule
@@ -74,9 +74,11 @@ class BasicTrainer():
 
         return top_words, train_theta
 
+    
     def train(self, dataset_handler, verbose=False):
         accumulation_steps = self.acc_step
         adam_optimizer = self.make_adam_optimizer()
+        sam_optimizer = self.make_sam_optimizer()  
 
         if self.lr_scheduler:
             print("===>using lr_scheduler")
@@ -94,9 +96,32 @@ class BasicTrainer():
 
                 rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                 batch_loss = rst_dict['loss']
-                adam_optimizer.zero_grad()
                 batch_loss.backward()
-                adam_optimizer.step()
+                # batch_loss = rst_dict['loss'] / accumulation_steps
+                
+                if (batch_idx + 1) % accumulation_steps == 0:
+
+                    sam_optimizer.first_step(zero_grad=True)
+
+                    rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
+                    batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
+                    batch_loss_adv.backward()
+
+                    sam_optimizer.second_step(zero_grad=True)
+                
+                elif (batch_idx + 1) % accumulation_steps != 0 and (batch_idx + 1) == len(dataset_handler.train_dataloader):
+
+                    sam_optimizer.first_step(zero_grad=True)
+                    rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
+                    batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
+                    batch_loss_adv.backward()
+
+                    sam_optimizer.second_step(zero_grad=True)
+                
+                else:
+                    adam_optimizer.step()
+                    adam_optimizer.zero_grad()
+
 
                 for key in rst_dict:
                     try:
@@ -118,77 +143,6 @@ class BasicTrainer():
 
                 print(output_log)
                 self.logger.info(output_log)
-
-
-
-    # def train(self, dataset_handler, verbose=False):
-    #     accumulation_steps = self.acc_step
-    #     adam_optimizer = self.make_adam_optimizer()
-    #     sam_optimizer = self.make_sam_optimizer()  
-
-    #     if self.lr_scheduler:
-    #         print("===>using lr_scheduler")
-    #         self.logger.info("===>using lr_scheduler")
-    #         lr_scheduler = self.make_lr_scheduler(adam_optimizer)
-
-    #     data_size = len(dataset_handler.train_dataloader.dataset)
-
-    #     for epoch in tqdm(range(1, self.epochs + 1)):
-    #         self.model.train()
-    #         loss_rst_dict = defaultdict(float)
-    #         wandb.log({'epoch': epoch})
-
-    #         for batch_idx, batch_data in enumerate(dataset_handler.train_dataloader):
-
-    #             rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-    #             batch_loss = rst_dict['loss']
-    #             batch_loss.backward()
-    #             # batch_loss = rst_dict['loss'] / accumulation_steps
-                
-    #             if (batch_idx + 1) % accumulation_steps == 0:
-
-    #                 sam_optimizer.first_step(zero_grad=True)
-
-    #                 rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-    #                 batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
-    #                 batch_loss_adv.backward()
-
-    #                 sam_optimizer.second_step(zero_grad=True)
-                
-    #             elif (batch_idx + 1) % accumulation_steps != 0 and (batch_idx + 1) == len(dataset_handler.train_dataloader):
-
-    #                 sam_optimizer.first_step(zero_grad=True)
-    #                 rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
-    #                 batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
-    #                 batch_loss_adv.backward()
-
-    #                 sam_optimizer.second_step(zero_grad=True)
-                
-    #             else:
-    #                 adam_optimizer.step()
-    #                 adam_optimizer.zero_grad()
-
-
-    #             for key in rst_dict:
-    #                 try:
-    #                     loss_rst_dict[key] += rst_dict[key] * \
-    #                         len(batch_data['data'])
-    #                 except:
-    #                     loss_rst_dict[key] += rst_dict[key] * len(batch_data)
-
-    #         for key in loss_rst_dict:
-    #             wandb.log({key: loss_rst_dict[key] / data_size})
-
-    #         if self.lr_scheduler:
-    #             lr_scheduler.step()
-
-    #         if verbose and epoch % self.log_interval == 0:
-    #             output_log = f'Epoch: {epoch:03d}'
-    #             for key in loss_rst_dict:
-    #                 output_log += f' {key}: {loss_rst_dict[key] / data_size :.3f}'
-
-    #             print(output_log)
-    #             self.logger.info(output_log)
 
     def test(self, input_data):
         if not isinstance(self.model, CombinedTM):
