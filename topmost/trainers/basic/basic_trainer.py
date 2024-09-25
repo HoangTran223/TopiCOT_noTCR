@@ -87,8 +87,6 @@ class BasicTrainer():
 
         data_size = len(dataset_handler.train_dataloader.dataset)
 
-        torch.autograd.set_detect_anomaly(True)
-
         for epoch in tqdm(range(1, self.epochs + 1)):
             self.model.train()
             loss_rst_dict = defaultdict(float)
@@ -106,10 +104,11 @@ class BasicTrainer():
                 batch_loss_TCR = rst_dict['loss_TCR']
                 if batch_loss_TCR.requires_grad:  # Kiểm tra nếu yêu cầu gradient
                     batch_loss_TCR.backward(retain_graph=True)
-                    adam_optimizer.step()
-                    adam_optimizer.zero_grad()
                 else:
                     print("Warning: batch_loss_TCR does not require grad")
+                
+                adam_optimizer.step()
+                adam_optimizer.zero_grad()
 
                 batch_loss = rst_dict['loss']
                 if batch_loss.requires_grad:  # Kiểm tra nếu yêu cầu gradient
