@@ -87,6 +87,8 @@ class BasicTrainer():
 
         data_size = len(dataset_handler.train_dataloader.dataset)
 
+        torch.autograd.set_detect_anomaly(True)
+
         for epoch in tqdm(range(1, self.epochs + 1)):
             self.model.train()
             loss_rst_dict = defaultdict(float)
@@ -110,7 +112,14 @@ class BasicTrainer():
                     print("Warning: batch_loss_TCR does not require grad")
 
                 batch_loss = rst_dict['loss']
-                batch_loss.backward()
+                if batch_loss.requires_grad:  # Kiểm tra nếu yêu cầu gradient
+                    batch_loss.backward()  
+                else:
+                    print("Warning: batch_loss does not require grad")
+
+
+                # batch_loss = rst_dict['loss']
+                # batch_loss.backward()
                 # batch_loss = rst_dict['loss'] / accumulation_steps
                 
                 if (batch_idx + 1) % accumulation_steps == 0:
@@ -120,8 +129,13 @@ class BasicTrainer():
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
                     # batch_loss_adv.clone().backward()
-                    batch_loss_adv.backward()
 
+                    if batch_loss_adv.requires_grad:  
+                        batch_loss_adv.backward()   
+                    else:
+                        print("Warning: batch_loss_adv does not require grad")
+
+                    # batch_loss_adv.backward()
                     sam_optimizer.second_step(zero_grad=True)
                 
                 elif (batch_idx + 1) % accumulation_steps != 0 and (batch_idx + 1) == len(dataset_handler.train_dataloader):
@@ -130,7 +144,13 @@ class BasicTrainer():
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
                     # batch_loss_adv.clone().backward()
-                    batch_loss_adv.backward()
+                    
+                    if batch_loss_adv.requires_grad:  
+                        batch_loss_adv.backward()  
+                    else:
+                        print("Warning: batch_loss_adv does not require grad")
+                    
+                    # batch_loss_adv.backward()
 
                     sam_optimizer.second_step(zero_grad=True)
                 
