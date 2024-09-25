@@ -96,7 +96,7 @@ class BasicTrainer():
 
                 rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                 
-                batch_loss_TCR = rst_dict['loss_TCR']
+                batch_loss_TCR = rst_dict['loss_TCR'].detach()
                 batch_loss_TCR.backward()
                 adam_optimizer.step()
                 adam_optimizer.zero_grad()
