@@ -37,7 +37,7 @@ class FSAM(torch.optim.Optimizer):
                     self.state[p]["momentum"] = grad
                 else:
                     # Compute d_t
-                    p.grad -= self.state[p]["momentum"] * self.sigma            
+                    p.grad = p.grad - self.state[p]["momentum"] * self.sigma            
 
                     # Compute m_t
                     self.state[p]["momentum"] = self.state[p]["momentum"] * self.lmbda + grad * (1 - self.lmbda)
@@ -64,7 +64,7 @@ class FSAM(torch.optim.Optimizer):
                 if p.grad is None: continue
 
                 # Get back to w from w + e(w)
-                p.data = self.state[p]["old_p"]        
+                p.data.copy_(self.state[p]["old_p"])   
         
         # Update
         self.base_optimizer.step()                      

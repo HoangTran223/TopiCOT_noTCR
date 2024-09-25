@@ -111,7 +111,7 @@ class BasicTrainer():
 
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
-                    batch_loss_adv.backward()
+                    batch_loss_adv.clone().backward()
 
                     sam_optimizer.second_step(zero_grad=True)
                 
@@ -120,7 +120,7 @@ class BasicTrainer():
                     sam_optimizer.first_step(zero_grad=True)
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
-                    batch_loss_adv.backward()
+                    batch_loss_adv.clone().backward()
 
                     sam_optimizer.second_step(zero_grad=True)
                 
