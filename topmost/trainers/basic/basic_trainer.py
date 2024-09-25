@@ -96,10 +96,18 @@ class BasicTrainer():
 
                 rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                 
-                batch_loss_TCR = rst_dict['loss_TCR'].detach()
-                batch_loss_TCR.backward(retain_graph=True)
-                adam_optimizer.step()
-                adam_optimizer.zero_grad()
+                # batch_loss_TCR = rst_dict['loss_TCR'].detach()
+                # batch_loss_TCR.backward(retain_graph=True)
+                # adam_optimizer.step()
+                # adam_optimizer.zero_grad()
+
+                batch_loss_TCR = rst_dict['loss_TCR']
+                if batch_loss_TCR.requires_grad:  # Kiểm tra nếu yêu cầu gradient
+                    batch_loss_TCR.backward(retain_graph=True)
+                    adam_optimizer.step()
+                    adam_optimizer.zero_grad()
+                else:
+                    print("Warning: batch_loss_TCR does not require grad")
 
                 batch_loss = rst_dict['loss']
                 batch_loss.backward()
@@ -111,7 +119,8 @@ class BasicTrainer():
 
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
-                    batch_loss_adv.clone().backward()
+                    # batch_loss_adv.clone().backward()
+                    batch_loss_adv.backward()
 
                     sam_optimizer.second_step(zero_grad=True)
                 
@@ -120,7 +129,8 @@ class BasicTrainer():
                     sam_optimizer.first_step(zero_grad=True)
                     rst_dict_adv = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
                     batch_loss_adv = rst_dict_adv['loss'] / accumulation_steps
-                    batch_loss_adv.clone().backward()
+                    # batch_loss_adv.clone().backward()
+                    batch_loss_adv.backward()
 
                     sam_optimizer.second_step(zero_grad=True)
                 
