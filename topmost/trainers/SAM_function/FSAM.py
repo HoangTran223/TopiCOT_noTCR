@@ -24,54 +24,105 @@ class FSAM(torch.optim.Optimizer):
                     p=2)
         return norm
 
+
     @torch.no_grad()
-    def first_step(self, zero_grad=False, device='cuda'):
+    def first_step(self, zero_grad=False):
 
         for group in self.param_groups:
-            for p in group["params"]:
-                if p.grad is None: 
-                    continue
-
+            for p in group["params"]:      
+                if p.grad is None: continue
                 grad = p.grad.clone()
-                state = self.state[p]
 
-                if "momentum" not in state:
-                    state["momentum"] = grad 
+                if not "momentum" in self.state[p]:
+                    self.state[p]["momentum"] = grad
                 else:
-                    p.grad.add_(state["momentum"], alpha=-self.sigma)
-                    state["momentum"].mul_(self.lmbda).add_(grad, alpha=1 - self.lmbda)  # In-place update momentum
+                    # Compute d_t
+                    p.grad -= self.state[p]["momentum"] * self.sigma            
 
+                    # Compute m_t
+                    self.state[p]["momentum"] = self.state[p]["momentum"] * self.lmbda + grad * (1 - self.lmbda)
+            
         grad_norm = self._grad_norm()
-
         for group in self.param_groups:
-            scale = group["rho"] / (grad_norm + 1e-12)  
+            scale = group["rho"] / (grad_norm + 1e-12)
+
             for p in group["params"]:
-                if p.grad is None: 
-                    continue
-
-                state = self.state[p]
-                state["old_p"] = p.data.clone() 
-
-                e_w = (torch.pow(p, 2) if  group["adaptive"] else 1.0) * p.grad * scale
-                p.add_(e_w) 
+                if p.grad is None: continue
+                self.state[p]["old_p"] = p.data.clone()
+                e_w = (torch.pow(p, 2) if group["adaptive"] else 1.0) * p.grad * scale.to(p)
+                
+                # Compute: w + e(w)
+                p.add_(e_w)                             
 
         if zero_grad: self.zero_grad()
-    
+
 
     @torch.no_grad()
     def second_step(self, zero_grad=False):
-        # Khôi phục 
         for group in self.param_groups:
             for p in group["params"]:
-                if p.grad is None: 
-                    continue
+                if p.grad is None: continue
 
-                p.data.copy_(self.state[p]["old_p"])  # Khôi phục trạng thái cũ
+                # Get back to w from w + e(w)
+                p.data = self.state[p]["old_p"]        
+        
+        # Update
+        self.base_optimizer.step()                      
 
-        self.base_optimizer.step()
+        if zero_grad: self.zero_grad()
 
-        if zero_grad:
-            self.zero_grad()
+
+
+
+
+    # @torch.no_grad()
+    # def first_step(self, zero_grad=False, device='cuda'):
+
+    #     for group in self.param_groups:
+    #         for p in group["params"]:
+    #             if p.grad is None: 
+    #                 continue
+
+    #             grad = p.grad.clone()
+    #             state = self.state[p]
+
+    #             if "momentum" not in state:
+    #                 state["momentum"] = grad 
+    #             else:
+    #                 p.grad.add_(state["momentum"], alpha=-self.sigma)
+    #                 state["momentum"].mul_(self.lmbda).add_(grad, alpha=1 - self.lmbda)  # In-place update momentum
+
+    #     grad_norm = self._grad_norm()
+
+    #     for group in self.param_groups:
+    #         scale = group["rho"] / (grad_norm + 1e-12)  
+    #         for p in group["params"]:
+    #             if p.grad is None: 
+    #                 continue
+
+    #             state = self.state[p]
+    #             state["old_p"] = p.data.clone() 
+
+    #             e_w = (torch.pow(p, 2) if  group["adaptive"] else 1.0) * p.grad * scale
+    #             p.add_(e_w) 
+
+    #     if zero_grad: self.zero_grad()
+    
+
+    # @torch.no_grad()
+    # def second_step(self, zero_grad=False):
+    #     # Khôi phục 
+    #     for group in self.param_groups:
+    #         for p in group["params"]:
+    #             if p.grad is None: 
+    #                 continue
+
+    #             p.data.copy_(self.state[p]["old_p"])  # Khôi phục trạng thái cũ
+
+    #     self.base_optimizer.step()
+
+    #     if zero_grad:
+    #         self.zero_grad()
 
     @torch.no_grad()
     def step(self, closure=None):
