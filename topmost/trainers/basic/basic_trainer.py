@@ -110,6 +110,9 @@ class BasicTrainer():
                 adam_optimizer.step()
                 adam_optimizer.zero_grad()
 
+            for batch_idx, batch_data in enumerate(dataset_handler.train_dataloader):
+                rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
+                
                 batch_loss = rst_dict['loss']
                 if batch_loss.requires_grad:  # Kiểm tra nếu yêu cầu gradient
                     batch_loss.backward()  
