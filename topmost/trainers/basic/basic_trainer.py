@@ -16,7 +16,7 @@ from topmost.trainers.SAM_function.SAM import SAM
 from topmost.trainers.SAM_function.FSAM import FSAM
 
 # Thêm
-from pytorch_lightning import LightningModule
+# from pytorch_lightning import LightningModule
 
 
 class BasicTrainer():
@@ -95,6 +95,12 @@ class BasicTrainer():
             for batch_idx, batch_data in enumerate(dataset_handler.train_dataloader):
 
                 rst_dict = self.model(batch_data, epoch_id=epoch, batch_idx=batch_idx)
+                
+                batch_loss_TCR = rst_dict['loss_TCR']
+                batch_loss_TCR.backward()
+                adam_optimizer.step()
+                adam_optimizer.zero_grad()
+
                 batch_loss = rst_dict['loss']
                 batch_loss.backward()
                 # batch_loss = rst_dict['loss'] / accumulation_steps

@@ -181,7 +181,9 @@ class OTClusterTM(nn.Module):
         # print(loss_ECR)
         # print(loss_DCR)
         # print(loss_TCR)
-        loss = loss_TM + loss_ECR + loss_DCR + loss_TCR
+
+        # Bỏ Loss_TCR
+        loss = loss_TM + loss_ECR + loss_DCR
 
         rst_dict = {
             'loss': loss,
